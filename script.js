@@ -1,7 +1,4 @@
-// Redirect to login if token not present
-if (window.location.pathname.endsWith('index.html') && !localStorage.getItem('token')) {
-    window.location.href = 'login.html';
-}
+
 function abrirTab(index) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -10,7 +7,7 @@ function abrirTab(index) {
     document.querySelectorAll('.tab-btn')[index].classList.add('active');
 
     if (index === 0) {
-        listarClientes();
+        listarAlunos();
     }
 }
 
@@ -39,16 +36,16 @@ function formatarResposta(resultado) {
     return html;
 }
 
-async function calcularIMC() {
+async function cadastrarAluno() {
     const dados = {
-        nome: document.getElementById("nome").value,
-        idade: document.getElementById("idade").value,
-        altura: document.getElementById("altura").value,
-        peso: document.getElementById("peso").value
+        nome: document.getElementById("aluno_nome").value,
+        email: document.getElementById("aluno_email").value,
+        matricula: document.getElementById("aluno_matricula").value,
+        dataNascimento: document.getElementById("aluno_dataNascimento").value
     };
 
     try {
-        const res = await fetch("http://localhost:3000/imc", {
+        const res = await fetch("http://localhost:3000/alunos", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -57,156 +54,72 @@ async function calcularIMC() {
         });
 
         const resultado = await res.json();
-        document.getElementById("resultadoIMC").innerHTML = formatarResposta(resultado);
+        document.getElementById("resultadoAluno").innerHTML = formatarResposta(resultado);
     } catch (erro) {
-        document.getElementById("resultadoIMC").innerHTML = formatarResposta({ erro: "Falha na comunicação com o servidor." });
+        document.getElementById("resultadoAluno").innerHTML = formatarResposta({ erro: "Falha na comunicação com o servidor." });
     }
 }
 
-async function cadastrarCliente() {
-    const dados = {
-        cpf: document.getElementById("cliente_cpf").value,
-        nome: document.getElementById("cliente_nome").value,
-        idade: document.getElementById("cliente_idade").value,
-        endereco: document.getElementById("cliente_endereco").value,
-        bairro: document.getElementById("cliente_bairro").value,
-        contato: document.getElementById("cliente_contato").value
-    };
 
-    try {
-        const res = await fetch("http://localhost:3000/clientes", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(dados)
-        });
 
-        const resultado = await res.json();
-        document.getElementById("resultadoCliente").innerHTML = formatarResposta(resultado);
-    } catch (erro) {
-        document.getElementById("resultadoCliente").innerHTML = formatarResposta({ erro: "Falha na comunicação com o servidor." });
-    }
-}
 
-async function login() {
-    const dados = {
-        user: document.getElementById("user").value,
-        senha: document.getElementById("senha").value
-    }
-
-    try {
-        const res = await fetch("http://localhost:3000/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(dados)
-        });
-
-        const resultado = await res.json();
-        if (resultado.token) {
-            localStorage.setItem("token", resultado.token);
-            window.location.href = "index.html";
-        } else {
-            alert("Login inválido!");
-        }
-    } catch (erro) {
-        alert("Falha na comunicação com o servidor.");
-    }
-}
-
-async function cadastrarUsuario() {
-    const dados = {
-        nome: document.getElementById("nome").value,
-        email: document.getElementById("email").value,
-        senha: document.getElementById("senha").value
-    }
-
-    try {
-        const res = await fetch("http://localhost:3000/usuarios", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(dados)
-        });
-
-        const resultado = await res.json();
-        if (resultado.token) {
-            localStorage.setItem("token", resultado.token);
-            window.location.href = "index.html";
-        } else {
-            alert("Cadastro inválido!");
-        }
-    } catch (erro) {
-        alert("Falha na comunicação com o servidor.");
-    }
-}
-
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = 'login.html';
-}
-
-async function listarClientes() {
+async function listarAlunos() {
     // Limpar o input de busca
-    const buscaInput = document.getElementById("busca_cpf");
+    const buscaInput = document.getElementById("busca_email");
     if (buscaInput) buscaInput.value = "";
 
     try {
-        const res = await fetch("http://localhost:3000/clientes");
-        const clientes = await res.json();
-        renderizarClientes(clientes);
+        const res = await fetch("http://localhost:3000/alunos");
+        const alunos = await res.json();
+        renderizarAlunos(alunos);
     } catch (erro) {
-        const container = document.getElementById("listaClientes");
+        const container = document.getElementById("listaAlunos");
         if (container) {
             container.innerHTML = `<div style="color: #721c24; padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">⚠️ Falha ao carregar clientes do servidor.</div>`;
         }
     }
 }
 
-async function buscarClientes() {
-    const cpfBusca = document.getElementById("busca_cpf").value.trim();
-    if (!cpfBusca) {
-        listarClientes();
+async function buscarAlunos() {
+    const emailBusca = document.getElementById("busca_email").value.trim();
+    if (!emailBusca) {
+        listarAlunos();
         return;
     }
 
     try {
-        const res = await fetch("http://localhost:3000/clientes");
-        const clientes = await res.json();
+        const res = await fetch("http://localhost:3000/alunos");
+        const alunos = await res.json();
         
         // Filtrar pelo CPF ignorando caracteres não numéricos
-        const cpfLimpo = cpfBusca.replace(/\D/g, '');
-        const filtrados = clientes.filter(c => c.cpf && c.cpf.replace(/\D/g, '') === cpfLimpo);
-        renderizarClientes(filtrados);
+        const emailLimpo = emailBusca.replace(/\D/g, '');
+        const filtrados = alunos.filter(c => c.cpf && c.cpf.replace(/\D/g, '') === emailLimpo);
+        renderizarAlunos(filtrados);
     } catch (erro) {
-        const container = document.getElementById("listaClientes");
+        const container = document.getElementById("listaAlunos");
         if (container) {
             container.innerHTML = `<div style="color: #721c24; padding: 15px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">⚠️ Falha ao buscar cliente.</div>`;
         }
     }
 }
 
-function renderizarClientes(clientes) {
-    const container = document.getElementById("listaClientes");
+function renderizarAlunos(alunos) {
+    const container = document.getElementById("listaAlunos");
     if (!container) return;
 
-    if (!clientes || clientes.length === 0) {
-        container.innerHTML = `<div class="no-clients">Nenhum cliente encontrado.</div>`;
+    if (!alunos || alunos.length === 0) {
+        container.innerHTML = `<div class="no-aluno">Nenhum aluno encontrado.</div>`;
         return;
     }
 
     let html = "";
-    clientes.forEach(cliente => {
+    alunos.forEach(aluno => {
         html += `
-            <div class="client-card">
-                <h3>${cliente.nome || 'Sem Nome'}</h3>
-                <p><strong>CPF:</strong> ${cliente.cpf || '-'}</p>
-                <p><strong>Idade:</strong> ${cliente.idade || '-'} anos</p>
-                <p><strong>Endereço:</strong> ${cliente.endereco || '-'}, ${cliente.bairro || '-'}</p>
-                <p><strong>Contato:</strong> ${cliente.contato || '-'}</p>
+            <div class="aluno-card">
+                <h3>${aluno.nome || 'Sem Nome'}</h3>
+                <p><strong>email:</strong> ${aluno.email || '-'}</p>
+                <p><strong>matricula:</strong> ${aluno.matricula || '-'}
+                <p><strong>dataNascimento:</strong> ${aluno.dataNascimento || '-'}</p>
             </div>
         `;
     });
@@ -216,8 +129,8 @@ function renderizarClientes(clientes) {
 // Carregar lista de clientes automaticamente ao abrir index.html
 if (window.location.pathname.endsWith('index.html') && localStorage.getItem('token')) {
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', listarClientes);
+        document.addEventListener('DOMContentLoaded', listarAlunos);
     } else {
-        listarClientes();
+        listarAlunos();
     }
 }
