@@ -92,8 +92,9 @@ async function buscarAlunos() {
         const alunos = await res.json();
         
         // Filtrar pelo CPF ignorando caracteres não numéricos
-        const emailLimpo = emailBusca.replace(/\D/g, '');
-        const filtrados = alunos.filter(c => c.cpf && c.cpf.replace(/\D/g, '') === emailLimpo);
+         const emailLimpo = emailBusca.trim().toLowerCase();
+        const filtrados = alunos.filter(aluno => aluno.email && aluno.email.trim().toLowerCase() === emailLimpo
+    );
         renderizarAlunos(filtrados);
     } catch (erro) {
         const container = document.getElementById("listaAlunos");
